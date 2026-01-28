@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏱️ Таймер для работы</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .timer-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .time {
+            font-size: 5rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .phase {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            overflow: hidden;
+            margin: 30px 0;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .work-progress {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        }
+        
+        .break-progress {
+            background: linear-gradient(90deg, #2196F3, #03A9F4);
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 193, 7, 0.9);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 193, 7, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+        
+        .btn-tertiary {
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+        }
+        
+        .btn-tertiary:hover {
+            background: rgba(244, 67, 54, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+        
+        .rewind-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .rewind-btn {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            min-width: auto;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .rewind-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            min-height: 30px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #8BC34A;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .time {
+                font-size: 3.5rem;
+            }
+            
+            .phase {
+                font-size: 1.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .progress-container {
+                height: 40px;
+            }
+            
+            .rewind-controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .time {
+                font-size: 3rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .rewind-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .work { color: #4CAF50; }
+        .break { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-clock"></i> Таймер для работы</h1>
+            <p class="subtitle">60 минут работы / 15 минут отдыха</p>
+        </header>
+        
+        <main>
+            <div class="timer-display">
+                <div class="time" id="time">60:00</div>
+                <div class="phase" id="phase">РАБОТА</div>
+            </div>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar work-progress" id="progressBar"></div>
+                <div class="progress-text" id="progressText">100%</div>
+            </div>
+            
+            <div class="status" id="status"></div>
+            
+            <div class="controls">
+                <button id="toggleBtn" class="btn-primary">
+                    <i class="fas fa-pause"></i> Пауза
+                </button>
+                <button id="skipBtn" class="btn-secondary">
+                    <i class="fas fa-forward"></i> Пропустить
+                </button>
+                <button id="resetBtn" class="btn-tertiary">
+                    <i class="fas fa-redo"></i> Сброс
+                </button>
+            </div>
+            
+            <div class="rewind-controls">
+                <button onclick="rewindTime(-300)" class="rewind-btn">
+                    <i class="fas fa-backward"></i> -5 мин
+                </button>
+                <button onclick="rewindTime(-60)" class="rewind-btn">
+                    <i class="fas fa-step-backward"></i> -1 мин
+                </button>
+                <button onclick="rewindTime(60)" class="rewind-btn">
+                    <i class="fas fa-step-forward"></i> +1 мин
+                </button>
+                <button onclick="rewindTime(300)" class="rewind-btn">
+                    <i class="fas fa-forward"></i> +5 мин
+                </button>
+                <button onclick="finishNow()" class="rewind-btn">
+                    <i class="fas fa-fast-forward"></i> Завершить
+                </button>
+                <button onclick="setWorkMode()" class="rewind-btn">
+                    <i class="fas fa-briefcase"></i> Работа
+                </button>
+                <button onclick="setBreakMode()" class="rewind-btn">
+                    <i class="fas fa-coffee"></i> Отдых
+                </button>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> Как пользоваться:</h3>
+                <ul>
+                    <li>Таймер автоматически переключается: 60 мин работа → 15 мин отдых</li>
+                    <li><strong>Кликните на полоску прогресса</strong> для перемотки времени</li>
+                    <li>Используйте кнопки для управления таймером</li>
+                    <li>Состояние сохраняется в браузере</li>
+                    <li>Работает на всех устройствах</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Настройки таймера
+        const WORK_DURATION = 60 * 60; // 60 минут в секундах
+        const BREAK_DURATION = 15 * 60; // 15 минут в секундах
+        
+        // Состояние таймера
+        let timer = {
+            isWork: true,
+            remaining: WORK_DURATION,
+            isRunning: true,
+            startTime: Date.now(),
+            elapsedWhenPaused: 0
+        };
+        
+        // Загрузить состояние из localStorage
+        function loadState() {
+            const saved = localStorage.getItem('workTimerState');
+            if (saved) {
+                const data = JSON.parse(saved);
+                // Восстанавливаем время с учетом прошедшего времени
+                if (data.isRunning) {
+                    const elapsed = Math.floor((Date.now() - data.lastSaved) / 1000);
+                    timer.remaining = Math.max(0, data.remaining - elapsed);
+                } else {
+                    timer.remaining = data.remaining;
+                }
+                timer.isWork = data.isWork;
+                timer.isRunning = data.isRunning;
+                updateDisplay();
+            }
+        }
+        
+        // Сохранить состояние в localStorage
+        function saveState() {
+            const state = {
+                isWork: timer.isWork,
+                remaining: timer.remaining,
+                isRunning: timer.isRunning,
+                lastSaved: Date.now()
+            };
+            localStorage.setItem('workTimerState', JSON.stringify(state));
+        }
+        
+        // Обновить отображение
+        function updateDisplay() {
+            const timeElement = document.getElementById('time');
+            const phaseElement = document.getElementById('phase');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const toggleBtn = document.getElementById('toggleBtn');
+            
+            // Форматирование времени
+            const minutes = Math.floor(timer.remaining / 60);
+            const seconds = timer.remaining % 60;
+            timeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Обновление фазы
+            if (timer.isWork) {
+                phaseElement.textContent = 'РАБОТА';
+                phaseElement.className = 'phase work';
+                progressBar.className = 'progress-bar work-progress';
+            } else {
+                phaseElement.textContent = 'ОТДЫХ';
+                phaseElement.className = 'phase break';
+                progressBar.className = 'progress-bar break-progress';
+            }
+            
+            // Обновление прогресс-бара
+            const totalDuration = timer.isWork ? WORK_DURATION : BREAK_DURATION;
+            const progress = ((totalDuration - timer.remaining) / totalDuration) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${Math.round(progress)}%`;
+            
+            // Обновление кнопки
+            toggleBtn.innerHTML = timer.isRunning 
+                ? '<i class="fas fa-pause"></i> Пауза'
+                : '<i class="fas fa-play"></i> Продолжить';
+            
+            // Изменение цвета времени при низком остатке
+            if (timer.remaining < 60) {
+                timeElement.style.color = '#ff5252';
+            } else if (timer.isWork) {
+                timeElement.style.color = '#4CAF50';
+            } else {
+                timeElement.style.color = '#2196F3';
+            }
+        }
+        
+        // Основной цикл таймера
+        function updateTimer() {
+            if (timer.isRunning && timer.remaining > 0) {
+                timer.remaining--;
+                
+                // Проверка на завершение фазы
+                if (timer.remaining === 0) {
+                    playNotification();
+                    
+                    if (timer.isWork) {
+                        timer.isWork = false;
+                        timer.remaining = BREAK_DURATION;
+                        showStatus('Время отдыха! 15 минут перерыва');
+                    } else {
+                        timer.isWork = true;
+                        timer.remaining = WORK_DURATION;
+                        showStatus('Время работать! 60 минут концентрации');
+                    }
+                }
+                
+                updateDisplay();
+                saveState();
+            }
+        }
+        
+        // Перемотка времени
+        function rewindTime(seconds) {
+            timer.remaining += seconds;
+            
+            // Если время вышло, переключаем фазу
+            if (timer.remaining <= 0) {
+                if (timer.isWork) {
+                    timer.isWork = false;
+                    timer.remaining = BREAK_DURATION;
+                } else {
+                    timer.isWork = true;
+                    timer.remaining = WORK_DURATION;
+                }
+            }
+            
+            // Ограничение максимального времени
+            const maxDuration = timer.isWork ? WORK_DURATION : BREAK_DURATION;
+            if (timer.remaining > maxDuration) {
+                timer.remaining = maxDuration;
+            }
+            
+            updateDisplay();
+            saveState();
+            
+            const minutes = Math.abs(Math.floor(seconds / 60));
+            const direction = seconds > 0 ? 'вперёд' : 'назад';
+            showStatus(`Перемотка ${direction} на ${minutes} мин`);
+        }
+        
+        // Завершить текущую фазу
+        function finishNow() {
+            timer.remaining = 0;
+            updateTimer();
+            showStatus('Фаза завершена');
+        }
+        
+        // Установить режим работы
+        function setWorkMode() {
+            timer.isWork = true;
+            timer.remaining = WORK_DURATION;
+            updateDisplay();
+            saveState();
+            showStatus('Установлен режим работы (60 минут)');
+        }
+        
+        // Установить режим отдыха
+        function setBreakMode() {
+            timer.isWork = false;
+            timer.remaining = BREAK_DURATION;
+            updateDisplay();
+            saveState();
+            showStatus('Установлен режим отдыха (15 минут)');
+        }
+        
+        // Показать статус
+        function showStatus(message) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.style.opacity = '1';
+            
+            setTimeout(() => {
+                statusElement.style.opacity = '0.9';
+            }, 3000);
+        }
+        
+        // Воспроизвести звук уведомления
+        function playNotification() {
+            try {
+                // Простой звуковой сигнал
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+                // Вибрация на мобильных (если доступно)
+                if (navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200]);
+                }
+            } catch (e) {
+                console.log('Звук не поддерживается');
+            }
+        }
+        
+        // Клик по прогресс-бару для перемотки
+        document.getElementById('progressContainer').addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percentage = clickX / rect.width;
+            
+            const totalDuration = timer.isWork ? WORK_DURATION : BREAK_DURATION;
+            const targetTime = Math.round(totalDuration * (1 - percentage));
+            const secondsToRewind = targetTime - timer.remaining;
+            
+            rewindTime(secondsToRewind);
+        });
+        
+        // Кнопки управления
+        document.getElementById('toggleBtn').addEventListener('click', function() {
+            timer.isRunning = !timer.isRunning;
+            updateDisplay();
+            saveState();
+            showStatus(timer.isRunning ? 'Таймер запущен' : 'Таймер на паузе');
+        });
+        
+        document.getElementById('skipBtn').addEventListener('click', function() {
+            timer.isWork = !timer.isWork;
+            timer.remaining = timer.isWork ? WORK_DURATION : BREAK_DURATION;
+            updateDisplay();
+            saveState();
+            showStatus(timer.isWork ? 'Переход к работе' : 'Переход к отдыху');
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            timer.isWork = true;
+            timer.remaining = WORK_DURATION;
+            timer.isRunning = true;
+            updateDisplay();
+            saveState();
+            showStatus('Таймер сброшен');
+        });
+        
+        // Запуск таймера
+        setInterval(updateTimer, 1000);
+        
+        // Загружаем состояние при загрузке страницы
+        window.addEventListener('load', function() {
+            loadState();
+            updateDisplay();
+        });
+        
+        // Сохраняем состояние при закрытии страницы
+        window.addEventListener('beforeunload', saveState);
+        
+        // Обновляем время при возвращении на вкладку
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                loadState();
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
